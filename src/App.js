@@ -3,12 +3,15 @@ import './App.css';
 import { MDBInput } from 'mdbreact';
 import axios from 'axios';
 import _ from 'lodash';
+const APP_ENTRY_POINT =
+  'https://us-central1-cit-examination.cloudfunctions.net/api';
+
 function App() {
   const [loading, setLoading] = useState(true);
   const [is_error, setHasError] = useState(false);
   async function fetchFiles() {
     await axios
-      .get('')
+      .get(APP_ENTRY_POINT)
       .then(response => response.data)
       .then(data => {
         setHasError(false);

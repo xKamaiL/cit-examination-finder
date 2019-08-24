@@ -1,6 +1,6 @@
 const axios = require('axios');
-const fs = require('fs');
 const _ = require('lodash');
+const fs = require('fs');
 console.log('Starting...');
 
 const subject = [
@@ -100,7 +100,7 @@ return axios.default
   .then(({ data }) => {
     convertToArray(data);
     return fs.writeFile(
-      'public/examination.json',
+      '../functions/examination.json',
       JSON.stringify({
         term1,
         term2
