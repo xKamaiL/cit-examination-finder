@@ -1,24 +1,39 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { useState, useEffect } from 'react';
 import './App.css';
-
+import { MDBInput } from 'mdbreact';
+import axios from 'axios';
+import _ from 'lodash';
 function App() {
+  const [loading, setLoading] = useState(true);
+  const [is_error, setHasError] = useState(false);
+  async function fetchFiles() {
+    await axios
+      .get('')
+      .then(response => response.data)
+      .then(data => {
+        setHasError(false);
+      })
+      .catch(error => {
+        setHasError(true);
+      });
+    setLoading(false);
+  }
+  useEffect(() => {
+    fetchFiles();
+  }, []);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className=" container">
+      <h2 className="app-title text-white py-3 text-center">
+        CIT EXAMINATION FINDER
+      </h2>
+      <div className="app-searching w-80 mx-auto text-white ">
+        <MDBInput
+          label="Search by name..."
+          size="lg"
+          className="text-white text-center"
+        />
+      </div>
     </div>
   );
 }
