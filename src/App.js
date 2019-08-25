@@ -1,43 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
-import { MDBInput, MDBBtn } from 'mdbreact';
-import axios from 'axios';
+import { MDBInput } from 'mdbreact';
 import _ from 'lodash';
 import SelectTerm from './SelectTerm';
 import SelectPart from './SelectPart';
 import { withRouter, Link, Route, Switch } from 'react-router-dom';
-const APP_ENTRY_POINT =
-  'https://us-central1-cit-examination.cloudfunctions.net/api';
-
+import { observer } from 'mobx-react';
+import store from './store';
+import ShowFiles from './ShowFiles';
 function App({ match, history }) {
-  const [loading, setLoading] = useState(true);
-  const [is_error, setHasError] = useState(false);
-  const [data, setData] = useState({
-    term1: {
-      midterm: [],
-      final: []
-    },
-    term2: {
-      midterm: [],
-      final: []
-    }
-  });
-  async function fetchFiles() {
-    await axios
-      .get(APP_ENTRY_POINT)
-      .then(response => response.data)
-      .then(data => {
-        setData(data);
-        setHasError(false);
-      })
-      .catch(error => {
-        setHasError(true);
-      });
-    setLoading(false);
-  }
   useEffect(() => {
     console.log(history);
-    fetchFiles();
+    store.fetchFiles();
   }, [history, match]);
 
   return (
@@ -50,17 +24,17 @@ function App({ match, history }) {
           label="Search by name..."
           size="lg"
           className="text-white text-center"
-          disabled={loading}
+          disabled={store.loading}
         />
       </div>
       <hr />
       <Switch>
         <Route exact path="/" component={SelectTerm} />
         <Route exact path="/term/:term" component={SelectPart} />
-        <Route exact path="/term/:term/part/:part" />
+        <Route exact path="/term/:term/part/:part" component={ShowFiles} />
       </Switch>
     </div>
   );
 }
 
-export default withRouter(App);
+export default withRouter(observer(App));

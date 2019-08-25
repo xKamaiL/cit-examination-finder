@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { Link, withRouter } from 'react-router-dom';
+import { CSSTransition } from 'react-transition-group';
+import store from './store';
+import { observer } from 'mobx-react-lite';
 const StyleSelectTerm = styled.div`
   .part {
     &:last-child {
@@ -27,10 +30,16 @@ const StyleSelectTerm = styled.div`
 `;
 const SelectPart = ({ match }) => {
   useEffect(() => {
+    store.term = match.params.term;
     return () => {};
   }, [match]);
   return (
-    <>
+    <CSSTransition
+      in={!store.loading}
+      timeout={3000}
+      classNames="select"
+      unmountOnExit
+    >
       <StyleSelectTerm className="row py-5 mx-2 mx-md-0">
         <Link
           to={`/term/${match.params.term}/part/midterm`}
@@ -45,7 +54,7 @@ const SelectPart = ({ match }) => {
           <h2>🔥 FINAL</h2>
         </Link>
       </StyleSelectTerm>
-    </>
+    </CSSTransition>
   );
 };
-export default withRouter(SelectPart);
+export default withRouter(observer(SelectPart));
