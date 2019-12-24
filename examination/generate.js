@@ -1,7 +1,7 @@
-const axios = require('axios');
-const _ = require('lodash');
-const fs = require('fs');
-console.log('Starting...');
+const axios = require('axios')
+const _ = require('lodash')
+const fs = require('fs')
+console.log('Starting...')
 
 const subject = [
   { id: '340151', name: 'Electrical Materials' },
@@ -43,16 +43,16 @@ const subject = [
   { id: '395182', name: 'Social Study II' },
   { id: '395183', name: 'Social Study III' },
   { id: '396121', name: 'Physical Education' }
-];
+]
 
 function getFileName(name) {
   let result = _.find(subject, {
     id: name
-  });
+  })
   if (result) {
-    return result.name;
+    return result.name
   } else {
-    return name;
+    return name
   }
 }
 
@@ -63,42 +63,42 @@ let term1 = {
   term2 = {
     midterm: [],
     final: []
-  };
+  }
 const convertToArray = file => {
   if (file.type === 'folder') {
     file.items.map(a => {
-      convertToArray(a);
-    });
+      convertToArray(a)
+    })
   } else {
     // implement file examination
-    let year = 'Unknown';
-    let fileName = 'Unknown';
-    year = file.path.split('/')[1];
-    fileName = `${getFileName(file.name.replace('.pdf', ''))} (${year}) `;
-    let isTerm1 = file.path.indexOf('term1') > -1 ? true : false;
-    let isFinal = file.path.indexOf('midterm') > -1 ? true : false;
+    let year = 'Unknown'
+    let fileName = 'Unknown'
+    year = file.path.split('/')[1]
+    fileName = `${getFileName(file.name.replace('.pdf', ''))} (${year}) `
+    let isTerm1 = file.path.indexOf('term1') > -1 ? true : false
+    let isFinal = file.path.indexOf('midterm') > -1 ? true : false
     console.log(
       'files: ' +
         fileName +
         `${isFinal ? 'Final' : 'Midterm'} ${isTerm1 ? 'TERM1' : 'TERM2'}`
-    );
+    )
     if (isTerm1) {
       term1[isFinal ? 'final' : 'midterm'].push({
         ...file,
         fileName
-      });
+      })
     } else {
       term2[isFinal ? 'final' : 'midterm'].push({
         ...file,
         fileName
-      });
+      })
     }
   }
-};
+}
 return axios.default
   .get('http://cit.kmutnb.ac.th/examination/scan.php')
   .then(({ data }) => {
-    convertToArray(data);
+    convertToArray(data)
     return fs.writeFile(
       '../functions/examination.json',
       JSON.stringify({
@@ -110,16 +110,16 @@ return axios.default
         if (err) {
           console.log(
             'Generate Failed! An error occured while writing JSON Object to File.'
-          );
-          return console.log(err);
+          )
+          return console.log(err)
         }
-        console.log('Successfully! JSON file has been saved.');
+        console.log('Successfully! JSON file has been saved.')
       }
-    );
+    )
   })
   .catch(error => {
-    console.log('Generate Failed! Error occurs while fetching restful api.');
-  });
+    console.log('Generate Failed! Error occurs while fetching restful api.')
+  })
 
 /*
 app.get('/', (req, res) => res.send('Hello World!'));
