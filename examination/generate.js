@@ -3,9 +3,13 @@ const _ = require('lodash')
 const fs = require('fs')
 console.log('Starting...')
 const http = require('http')
+const home = require('os').homedir()
 
-const download = function(url, dest, cb) {
-  const file = fs.createWriteStream(dest)
+const download = function(url, dest, filename, cb) {
+  if (!fs.existsSync(dest)) {
+    fs.mkdirSync(dest)
+  }
+  const file = fs.createWriteStream(dest + '/' + filename + '.pdf')
   http
     .get(url, function(response) {
       response.pipe(file)
@@ -117,10 +121,12 @@ return axios.default
   .then(async ({ data }) => {
     await convertToArray(data)
     resultItem.map((item, index) => {
-      console.log('Downloading ' + item.name)
+      console.log('Start download ' + item.fileName)
+
       download(
         'http://cit.kmutnb.ac.th/examination/' + item.path,
-        '~/Desktop/' + process.argv[3] + '/' + item.fileName,
+        home + '/Desktop/' + process.argv[3],
+        item.fileName,
         () => {
           console.log('Success!')
         }
