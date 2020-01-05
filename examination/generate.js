@@ -2,8 +2,24 @@ const axios = require('axios')
 const _ = require('lodash')
 const fs = require('fs')
 console.log('Starting...')
+const http = require('http')
 
-const subject = [
+const download = function(url, dest, cb) {
+  const file = fs.createWriteStream(dest)
+  http
+    .get(url, function(response) {
+      response.pipe(file)
+      file.on('finish', function() {
+        file.close(cb)
+      })
+    })
+    .on('error', function(err) {
+      // Handle errors
+      fs.unlink(dest) // Delete the file async. (But we don't check the result)
+      if (cb) cb(err.message)
+    })
+}
+let subject = [
   { id: '340151', name: 'Electrical Materials' },
   { id: '340152', name: 'Electrical Measuring Instruments' },
   { id: '341151', name: 'Electric Circuits I' },
@@ -45,6 +61,14 @@ const subject = [
   { id: '396121', name: 'Physical Education' }
 ]
 
+function isExists(name) {
+  const subjectIdName = process.argv[2]
+  subject = [{ id: String(subjectIdName), name: 'Physic IV' }]
+
+  return _.find(subject, {
+    id: name.replace(/\D/g, '')
+  })
+}
 function getFileName(name) {
   let result = _.find(subject, {
     id: name
@@ -56,14 +80,8 @@ function getFileName(name) {
   }
 }
 
-let term1 = {
-    midterm: [],
-    final: []
-  },
-  term2 = {
-    midterm: [],
-    final: []
-  }
+const resultItem = []
+
 const convertToArray = file => {
   if (file.type === 'folder') {
     file.items.map(a => {
@@ -73,52 +91,45 @@ const convertToArray = file => {
     // implement file examination
     let year = 'Unknown'
     let fileName = 'Unknown'
-    year = file.path.split('/')[1]
-    fileName = `${getFileName(file.name.replace('.pdf', ''))} (${year}) `
-    let isTerm1 = file.path.indexOf('term1') > -1 ? true : false
-    let isFinal = file.path.indexOf('midterm') > -1 ? true : false
-    console.log(
-      'files: ' +
-        fileName +
-        `${isFinal ? 'Final' : 'Midterm'} ${isTerm1 ? 'TERM1' : 'TERM2'}`
-    )
-    if (isTerm1) {
-      term1[isFinal ? 'final' : 'midterm'].push({
-        ...file,
-        fileName
-      })
-    } else {
-      term2[isFinal ? 'final' : 'midterm'].push({
-        ...file,
-        fileName
-      })
+    if (file.name != null) {
+      year = file.path.split('/')[1]
+      fileName = `${getFileName(file.name.replace('.pdf', ''))} (${year}) `
+
+      let isTerm1 = file.path.indexOf('term1') > -1 ? true : false
+      let isFinal = file.path.indexOf('midterm') > -1 ? true : false
+
+      if (isExists(file.name) && !isTerm1 && !isFinal) {
+        resultItem.push({
+          ...file,
+          fileName
+        })
+      }
     }
   }
 }
+
+if (process.argv.length === 2) {
+  return console.warn('node generate.js [subject-id] [path]')
+}
+
 return axios.default
   .get('http://cit.kmutnb.ac.th/examination/scan.php')
-  .then(({ data }) => {
-    convertToArray(data)
-    return fs.writeFile(
-      '../functions/examination.json',
-      JSON.stringify({
-        term1,
-        term2
-      }),
-      'utf8',
-      function(err) {
-        if (err) {
-          console.log(
-            'Generate Failed! An error occured while writing JSON Object to File.'
-          )
-          return console.log(err)
+  .then(async ({ data }) => {
+    await convertToArray(data)
+    resultItem.map((item, index) => {
+      console.log('Downloading ' + item.name)
+      download(
+        'http://cit.kmutnb.ac.th/examination/' + item.path,
+        '~/Desktop/' + process.argv[3] + '/' + item.fileName,
+        () => {
+          console.log('Success!')
         }
-        console.log('Successfully! JSON file has been saved.')
-      }
-    )
+      )
+    })
   })
   .catch(error => {
     console.log('Generate Failed! Error occurs while fetching restful api.')
+    console.error(error)
   })
 
 /*
