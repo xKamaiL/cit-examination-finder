@@ -102,7 +102,7 @@ const convertToArray = file => {
       let isTerm1 = file.path.indexOf('term1') > -1 ? true : false
       let isFinal = file.path.indexOf('midterm') > -1 ? true : false
 
-      if (isExists(file.name) && !isTerm1 && isFinal) {
+      if (isExists(file.name) && !isTerm1 && !isFinal) {
         resultItem.push({
           ...file,
           fileName
